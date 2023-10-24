@@ -28,37 +28,37 @@ public class ProcessFileTest {
     private ResourceLoader resourceLoader;
 
     // Field without Multithread
-    //List<TransactionDto> listTransaction = new ArrayList<>();
-    //Integer transactionCountRecord = 0;
+    List<TransactionDto> listTransactionSingleThread = new ArrayList<>();
+    Integer transactionRecordCountSingleThread = 0;
 
     //Field with Multithread
     List<TransactionDto> listTransaction = Collections.synchronizedList(new ArrayList<>());
-    AtomicInteger transactionCountRecord = new AtomicInteger(0);
+    AtomicInteger transactionRecordCount = new AtomicInteger(0);
 
 
-//    @Test
-//    @SneakyThrows
-//    void processFileWithoutMultithread() {
-//
-//        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(resourceLoader);
-//        Resource[] resources = resolver.getResources("transactions/**.ndjson");
-//        ObjectMapper objectMapper = new ObjectMapper();
-//
-//        for (Resource resource : resources) {
-//            Thread.sleep(1000L);
-//            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-//                String line;
-//                while ((line = reader.readLine()) != null) {
-//                    TransactionDto transactionDto = objectMapper.readValue(line, TransactionDto.class);
-//                    transactionCountRecord += 1;
-//                    listTransaction.add(transactionDto);
-//                    System.out.println(transactionDto);
-//                }
-//            }
-//        }
-//        System.out.println("Size of list transaction: " + listTransaction.size());
-//        System.out.println("transaction count record: " + transactionCountRecord);
-//    }
+    @Test
+    @SneakyThrows
+    void processFileWithoutMultithread() {
+
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(resourceLoader);
+        Resource[] resources = resolver.getResources("transactions/**.ndjson");
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        for (Resource resource : resources) {
+            // Thread sleeps around 1 second as if the time needed to process a file
+            Thread.sleep(1000L);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    TransactionDto transactionDto = objectMapper.readValue(line, TransactionDto.class);
+                    transactionRecordCountSingleThread += 1;
+                    listTransactionSingleThread.add(transactionDto);
+                }
+            }
+        }
+        System.out.println("Size of list transaction: " + listTransaction.size());
+        System.out.println("Transaction record count: " + transactionRecordCount);
+    }
 
     @Test
     @SneakyThrows
@@ -74,15 +74,15 @@ public class ProcessFileTest {
         for (Resource resource : resources) {
             executor.execute(() -> {
                 try {
+                    // Thread sleeps around 1 second as if the time needed to process a file
                     Thread.sleep(1000L);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()));
                     String line;
                     while ((line = reader.readLine()) != null) {
                         TransactionDto transactionDto = objectMapper.readValue(line, TransactionDto.class);
-                        transactionCountRecord.incrementAndGet();
+                        transactionRecordCount.incrementAndGet();
 
                         listTransaction.add(transactionDto);
-                        System.out.println(transactionDto);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -96,6 +96,6 @@ public class ProcessFileTest {
         executor.awaitTermination(1, TimeUnit.HOURS);
 
         System.out.println("Size of list transaction: " + listTransaction.size());
-        System.out.println("transaction count record: " + transactionCountRecord);
+        System.out.println("Transaction record count: " + transactionRecordCount);
     }
 }
