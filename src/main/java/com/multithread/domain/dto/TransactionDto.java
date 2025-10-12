@@ -5,6 +5,18 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Created by IntelliJ IDEA.
+ * Project : file-processing-multithread
+ * User: hendisantika
+ * Link: s.id/hendisantika
+ * Email: hendisantika@yahoo.co.id
+ * Telegram : @hendisantika34
+ * Date: 12/10/25
+ * Time: 10.30
+ * To change this template use File | Settings | File Templates.
+ */
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

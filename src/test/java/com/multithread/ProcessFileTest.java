@@ -2,7 +2,6 @@ package com.multithread;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.multithread.domain.dto.TransactionDto;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,8 +36,7 @@ public class ProcessFileTest {
 
 
     @Test
-    @SneakyThrows
-    void processFileWithoutMultithread() {
+    void processFileWithoutMultithread() throws Exception {
 
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(resourceLoader);
         Resource[] resources = resolver.getResources("transactions/**.ndjson");
@@ -56,13 +54,12 @@ public class ProcessFileTest {
                 }
             }
         }
-        System.out.println("Size of list transaction: " + listTransaction.size());
-        System.out.println("Transaction record count: " + transactionRecordCount);
+        System.out.println("Size of list transaction (single-thread): " + listTransactionSingleThread.size());
+        System.out.println("Transaction record count (single-thread): " + transactionRecordCountSingleThread);
     }
 
     @Test
-    @SneakyThrows
-    void processFileWithMultithread() {
+    void processFileWithMultithread() throws Exception {
 
         // Define size of thread pool
         ExecutorService executor = Executors.newFixedThreadPool(5);
@@ -84,6 +81,7 @@ public class ProcessFileTest {
 
                         listTransaction.add(transactionDto);
                     }
+                    reader.close();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
@@ -95,7 +93,7 @@ public class ProcessFileTest {
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.HOURS);
 
-        System.out.println("Size of list transaction: " + listTransaction.size());
-        System.out.println("Transaction record count: " + transactionRecordCount);
+        System.out.println("Size of list transaction (multi-thread): " + listTransaction.size());
+        System.out.println("Transaction record count (multi-thread): " + transactionRecordCount);
     }
 }
